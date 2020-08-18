@@ -8,7 +8,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 # 
 from dataset import get_dataset
-from model import VAE
+from model import AutoEncoder
 
 def train(model, data, epoch, criterion, optimizer, device):
     model.train()
@@ -16,13 +16,12 @@ def train(model, data, epoch, criterion, optimizer, device):
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.to(device)
+        image = image.view(image.size(0), -1).to(device)
 
         optimizer.zero_grad()
-        recon, mu, logvar = model(image)
+        recon = model(image)
         
-        loss = criterion(recon, image, mu, logvar) # calculate error
-#         loss = criterion(recon, image)
+        loss = criterion(recon, image)
         loss_list.append(loss.item())
         loss.backward()  # back-propagation
         optimizer.step() # gradient descent
@@ -34,27 +33,20 @@ def test(model, data, criterion, device):
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.to(device)
+        image = image.view(image.size(0), -1).to(device)
 
-        recon, mu, logvar = model(image)
-        loss = criterion(recon, image, mu, logvar)
-#         loss = criterion(recon, image)
+        recon = model(image)
+        loss = criterion(recon, image)
         loss_list.append(loss.item())
     
-        if i == 0:
+        if i == 0 and epoch % 5 == 0:
             n = min(image.size(0), 8)
-            comparison = torch.cat([image[:n],
+            comparison = torch.cat([image.view(-1, 1, 28, 28)[:n],
                                   recon.view(-1, 1, 28, 28)[:n]])
             save_image(comparison.cpu(),
-                     'results/reconstruction_{:03}.png'.format(epoch), nrow=n)
+                     'results/recon_{:03}.png'.format(epoch), nrow=n)
 
     return sum(loss_list) / len(loss_list)
-
-def bce_kld_loss(recon_x, x, mu, logvar):
-    bce_loss = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
-    
-    kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return bce_loss + kld_loss
 
 if __name__ == '__main__':
     # == Setting ==
@@ -67,10 +59,10 @@ if __name__ == '__main__':
     train_data, test_data = get_dataset(data_name)
 
     # == Model ==
-    model = VAE().to(device)
+    model = AutoEncoder().to(device)
 
     # == optimizer ==
-    criterion = bce_kld_loss
+    criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # == Main Loop ==
@@ -85,7 +77,7 @@ if __name__ == '__main__':
 
     for epoch in range(1, max_epoch + 1):
         t = time.time()
-        train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
+        # train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
         test_loss = test(model, test_data, criterion, device=device)
 #         scheduler.step()
 
@@ -100,10 +92,16 @@ if __name__ == '__main__':
         plt.plot(range(1, epoch + 1), train_loss_list)
         plt.plot(range(1, epoch + 1), test_loss_list, color='r')
         plt.legend(['train_loss', 'test_loss'])
-        plt.savefig('{}_vae_loss.png'.format(data_name))
+        plt.savefig('{}_ae_loss.png'.format(data_name))
         plt.cla()
         
         if epoch % 5 == 0:
             print('----- epoch {} -----'.format(epoch))
-            torch.save(model.state_dict(), 'ckpts/e{:03}vae_{}.pt'.format(
+            torch.save(model.state_dict(), 'ckpts/e{:03}ae_{}.pt'.format(
                 epoch, data_name))
+            
+            # sample
+            sample = torch.randn(64, 20).to(device)
+            sample = model.decode(sample).cpu()
+            save_image(sample.view(64, 1, 28, 28),
+                       'results/sample_e{:02}.png'.format(epoch))

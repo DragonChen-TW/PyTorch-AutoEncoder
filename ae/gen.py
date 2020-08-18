@@ -9,7 +9,7 @@ def gen_pic(ckpt, epoch):
     model.load_state_dict(torch.load(ckpt))
     model.eval()
     sample = torch.randn(64, 20).to(device)
-    sample = model.decode(sample).cpu()
+    sample = model.decoder(sample).cpu()
     save_image(sample.view(64, 1, 28, 28),
                'results/sample_e{:02}.png'.format(epoch))
 
