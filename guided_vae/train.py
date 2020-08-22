@@ -6,7 +6,6 @@ from torchvision.utils import save_image
 
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import numpy as np
 # 
 from dataset import get_dataset
 from model import VAE
@@ -22,9 +21,7 @@ def train(model, data, epoch, criterion, optimizer, device):
         optimizer.zero_grad()
         recon, mu, logvar = model(image)
         
-        loss, bce_loss, kld_loss = criterion(recon, image, mu, logvar) # calculate error
-        if i == 0:
-            print('bce', bce_loss, 'kld', kld_loss)
+        loss = criterion(recon, image, mu, logvar) # calculate error
 #         loss = criterion(recon, image)
         loss_list.append(loss.item())
         loss.backward()  # back-propagation
@@ -40,12 +37,12 @@ def test(model, data, criterion, device):
         image = image.to(device)
 
         recon, mu, logvar = model(image)
-        loss, _, _ = criterion(recon, image, mu, logvar)
+        loss = criterion(recon, image, mu, logvar)
 #         loss = criterion(recon, image)
         loss_list.append(loss.item())
     
         if i == 0 and epoch % 5 == 0:
-            n = min(image.size(0), 16)
+            n = min(image.size(0), 8)
             comparison = torch.cat([image[:n],
                                   recon.view(-1, 1, 28, 28)[:n]])
             save_image(comparison.cpu(),
@@ -54,11 +51,10 @@ def test(model, data, criterion, device):
     return sum(loss_list) / len(loss_list)
 
 def bce_kld_loss(recon_x, x, mu, logvar):
-    # bce_loss = torch.mean(F.bce_loss(recon_x, x.view(-1, 784)))
     bce_loss = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
     
-    kld_loss = torch.mean(-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1), dim=0)
-    return bce_loss + kld_loss, bce_loss.item(), kld_loss.item()
+    kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    return bce_loss + kld_loss
 
 if __name__ == '__main__':
     # == Setting ==
@@ -71,11 +67,11 @@ if __name__ == '__main__':
     train_data, test_data = get_dataset(data_name)
 
     # == Model ==
-    model = VAE(latent_size=2).to(device)
+    model = VAE().to(device)
 
     # == optimizer ==
     criterion = bce_kld_loss
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # == Main Loop ==
     max_acc = 0
@@ -113,20 +109,7 @@ if __name__ == '__main__':
                 epoch, data_name))
 
             # sample
-            sample = torch.randn(64, 2).to(device)
+            sample = torch.randn(64, 20).to(device)
             sample = model.decode(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))
-            
-            imgs = np.empty((28 * 20, 28 * 20))
-            index_x = 0
-            for x in range(-10,10,1):
-                index_y = 0
-                for y in range(-10,10,1):
-                    value = np.array([[float(x / 5.), float(y / 5.)]])
-                    img = model.decode(torch.Tensor(value).to(device)).cpu()
-                    imgs[index_x * 28:(index_x + 1) * 28, index_y * 28:(index_y + 1) * 28] = img.view(28, 28).detach().numpy()
-                    index_y += 1
-                index_x += 1
-
-            save_image(torch.Tensor(imgs), 'results/samples_e{:02}.png'.format(epoch))

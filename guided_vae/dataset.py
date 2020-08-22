@@ -43,7 +43,7 @@ def get_mnist(data_dir='/home/dragonchen/data/', to_rgb=False):
     if to_rgb:
         trans.append(GrayscaleToRgb())
     trans.append(transforms.ToTensor())
-#     trans.append(transforms.Normalize([0.5], [0.5]))
+    trans.append(transforms.Normalize([0.5], [0.5]))
         
     trans = transforms.Compose(trans)
     
