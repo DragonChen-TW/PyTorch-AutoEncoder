@@ -1,4 +1,4 @@
-import time
+import time, os
 import torch
 from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
@@ -50,7 +50,7 @@ def test(model, data, criterion, device):
 
 if __name__ == '__main__':
     # == Setting ==
-    device = torch.device('cpu')
+    device = torch.device('cuda')
     print('Using', device)
 
     # == Data ==
@@ -59,6 +59,10 @@ if __name__ == '__main__':
     print('Data using: {}'.format(data_name))
     train_data, test_data = get_dataset(data_name,
         data_dir=data_dir)
+
+    # make dirs
+    os.makedirs('results', exist_ok=True)
+    os.makedirs('ckpts', exist_ok=True)
 
     # == Model ==
     model = IRMAE().to(device)
@@ -69,8 +73,8 @@ if __name__ == '__main__':
 
     # == Main Loop ==
     max_acc = 0
-    max_epoch = 5
-#     scheduler = StepLR(optimizer=optimizer, step_size=10)
+    max_epoch = 90
+    scheduler = StepLR(optimizer=optimizer, step_size=30)
 
     # first epoch
     # test(model, test_data, device=device)
@@ -81,7 +85,7 @@ if __name__ == '__main__':
         t = time.time()
         train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
         test_loss = test(model, test_data, criterion, device=device)
-#         scheduler.step()
+        scheduler.step()
 
         print('train loss:', train_loss, 'test loss:', test_loss)
 
@@ -103,7 +107,7 @@ if __name__ == '__main__':
                 epoch, data_name))
 
             # sample
-            sample = torch.randn(64, 20).to(device)
-            sample = model(sample).cpu()
+            sample = torch.randn(64, 10).to(device)
+            sample = model.decoder(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))
