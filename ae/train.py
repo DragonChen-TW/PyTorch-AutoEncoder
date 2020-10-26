@@ -8,7 +8,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 # 
 from dataset import get_dataset
-from model import AutoEncoder
+from model import ConvAutoEncoder
 
 def train(model, data, epoch, criterion, optimizer, device):
     model.train()
@@ -16,7 +16,8 @@ def train(model, data, epoch, criterion, optimizer, device):
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.view(image.size(0), -1).to(device)
+#         image = image.view(image.size(0), -1).to(device)
+        image = image.to(device)
 
         optimizer.zero_grad()
         recon = model(image)
@@ -33,7 +34,8 @@ def test(model, data, criterion, device):
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.view(image.size(0), -1).to(device)
+#         image = image.view(image.size(0), -1).to(device)
+        image = image.to(device)
 
         recon = model(image)
         loss = criterion(recon, image)
@@ -50,7 +52,7 @@ def test(model, data, criterion, device):
 
 if __name__ == '__main__':
     # == Setting ==
-    device = torch.device('cuda:1')
+    device = torch.device('cuda')
     print('Using', device)
     
     # == Data ==
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     train_data, test_data = get_dataset(data_name)
 
     # == Model ==
-    model = AutoEncoder().to(device)
+    model = ConvAutoEncoder().to(device)
 
     # == optimizer ==
     criterion = torch.nn.MSELoss()
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     # == Main Loop ==
     max_acc = 0
     max_epoch = 90
-    scheduler = StepLR(optimizer=optimizer, step_size=30)
+#     scheduler = StepLR(optimizer=optimizer, step_size=10)
 
     # first epoch
     # test(model, test_data, device=device)
@@ -79,7 +81,7 @@ if __name__ == '__main__':
         t = time.time()
         train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
         test_loss = test(model, test_data, criterion, device=device)
-        scheduler.step()
+#         scheduler.step()
 
         print('train loss:', train_loss, 'test loss:', test_loss)
 
@@ -101,7 +103,7 @@ if __name__ == '__main__':
                 epoch, data_name))
             
             # sample
-            sample = torch.randn(64, 128).to(device)
-            sample = model.decoder(sample).cpu()
+            sample = torch.randn(64, 20).to(device)
+            sample = model.decode(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))

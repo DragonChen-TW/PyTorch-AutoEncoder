@@ -66,7 +66,7 @@ def get_mnist(data_dir='/home/dragonchen/data/', to_rgb=False):
                             shuffle=False)
 
     return train_data, test_data
-
+# torch.utils.data
 class mnistmData(data.Dataset):
     def __init__(self, root, mode='train', to_gray=False):
         '''
