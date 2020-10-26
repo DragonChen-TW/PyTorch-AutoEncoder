@@ -17,17 +17,17 @@ run `check.ipynb` to inspect the effect of irmae
 
 IRMAE I = 4, letent_dim = 128
 
-IRMAE
+IRMAE  
 ![irmae1](./plots/irmae1.png)
-Vanilla AE
-![ae1](.plots/ae1.png)
+Vanilla AE  
+![ae1](./plots/ae1.png)
 
-IRMAE
+IRMAE  
 ![irmae2](./plots/irmae2.png)
-Vanilla AE
-![ae2](.plots/ae2.png)
+Vanilla /AE  
+![ae2](./plots/ae2.png)
 
-IRMAE
+IRMAE  
 ![irmae2](./plots/irmae2.png)
-Vanilla AE
-![ae2](.plots/ae2.png)
+Vanilla AE  
+![ae2](./plots/ae2.png)
