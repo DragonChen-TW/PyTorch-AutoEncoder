@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 class AutoEncoder(nn.Module):
-    def __init__(self):
+    def __init__(self, latent_dim=128):
         super().__init__()
 
         self.encoder = nn.Sequential(
@@ -11,10 +11,10 @@ class AutoEncoder(nn.Module):
             nn.ReLU(True),
             nn.Linear(256, 64),
             nn.ReLU(True),
-            nn.Linear(64, 20),
+            nn.Linear(64, latent_dim),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(20, 64),
+            nn.Linear(latent_dim, 64),
             nn.ReLU(True),
             nn.Linear(64, 256),
             nn.ReLU(True),

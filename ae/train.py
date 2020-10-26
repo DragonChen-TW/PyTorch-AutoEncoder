@@ -50,7 +50,7 @@ def test(model, data, criterion, device):
 
 if __name__ == '__main__':
     # == Setting ==
-    device = torch.device('cuda')
+    device = torch.device('cuda:1')
     print('Using', device)
     
     # == Data ==
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # == Main Loop ==
     max_acc = 0
     max_epoch = 90
-#     scheduler = StepLR(optimizer=optimizer, step_size=10)
+    scheduler = StepLR(optimizer=optimizer, step_size=30)
 
     # first epoch
     # test(model, test_data, device=device)
@@ -77,9 +77,9 @@ if __name__ == '__main__':
 
     for epoch in range(1, max_epoch + 1):
         t = time.time()
-        # train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
+        train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
         test_loss = test(model, test_data, criterion, device=device)
-#         scheduler.step()
+        scheduler.step()
 
         print('train loss:', train_loss, 'test loss:', test_loss)
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 epoch, data_name))
             
             # sample
-            sample = torch.randn(64, 20).to(device)
-            sample = model.decode(sample).cpu()
+            sample = torch.randn(64, 128).to(device)
+            sample = model.decoder(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))

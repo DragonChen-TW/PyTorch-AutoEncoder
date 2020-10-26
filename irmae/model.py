@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 class IRMAE(nn.Module):
-    def __init__(self, len_w=2, latent_dim=10):
+    def __init__(self, len_w=8, latent_dim=128):
         super().__init__()
 
         self.encoder = nn.Sequential(
@@ -15,7 +15,7 @@ class IRMAE(nn.Module):
         )
 
         self.w_layers = nn.Sequential(*[
-            nn.Linear(latent_dim, latent_dim, bias=False) for _ in range(len_w)
+            nn.Linear(latent_dim, latent_dim) for _ in range(len_w)
         ])
 
         self.decoder = nn.Sequential(

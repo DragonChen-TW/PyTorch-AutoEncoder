@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 epoch, data_name))
 
             # sample
-            sample = torch.randn(64, 10).to(device)
+            sample = torch.randn(64, 128).to(device)
             sample = model.decoder(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))
