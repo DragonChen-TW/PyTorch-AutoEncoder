@@ -1,8 +1,0 @@
-irmae
-no normal
-epoch 20 without bias in z
-train loss: 0.019070431182006083 test loss: 0.019191126410321446
-
-no normal
-epoch 20 with bias in z
-train loss: 0.01946415789107651 test loss: 0.019334849907429355

@@ -16,7 +16,8 @@ def train(model, data, epoch, criterion, optimizer, device):
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.view(image.size(0), -1).to(device)
+#         image = image.view(image.size(0), -1).to(device)
+        image = image.to(device)
 
         optimizer.zero_grad()
         recon = model(image)
@@ -28,12 +29,13 @@ def train(model, data, epoch, criterion, optimizer, device):
 
     return sum(loss_list) / len(loss_list)
 
-def test(model, data, criterion, device):
+def test(model, data, epoch, criterion, device):
     model.eval()
     loss_list = []
 
     for i, (image, _) in tqdm(enumerate(data), total=len(data)):
-        image = image.view(image.size(0), -1).to(device)
+#         image = image.view(image.size(0), -1).to(device)
+        image = image.to(device)
 
         recon = model(image)
         loss = criterion(recon, image)
@@ -69,12 +71,12 @@ if __name__ == '__main__':
 
     # == optimizer ==
     criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     # == Main Loop ==
     max_acc = 0
-    max_epoch = 90
-    scheduler = StepLR(optimizer=optimizer, step_size=30)
+    max_epoch = 50
+#     scheduler = StepLR(optimizer=optimizer, step_size=30)
 
     # first epoch
     # test(model, test_data, device=device)
@@ -85,7 +87,7 @@ if __name__ == '__main__':
         t = time.time()
         train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
         test_loss = test(model, test_data, criterion, device=device)
-        scheduler.step()
+#         scheduler.step()
 
         print('train loss:', train_loss, 'test loss:', test_loss)
 
