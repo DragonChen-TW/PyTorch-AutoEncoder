@@ -28,6 +28,6 @@ Vanilla /AE
 ![ae2](./plots/ae2.png)
 
 IRMAE  
-![irmae2](./plots/irmae2.png)
+![irmae3](./plots/irmae3.png)
 Vanilla AE  
-![ae2](./plots/ae2.png)
+![ae3](./plots/ae3.png)
