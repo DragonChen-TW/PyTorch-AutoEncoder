@@ -23,6 +23,7 @@ class VAE(nn.Module):
             nn.Linear(32, 256),
             nn.ReLU(True),
             nn.Linear(256, 784),
+            nn.Sigmoid(),
         )
 
     def encode(self, x):
@@ -39,7 +40,6 @@ class VAE(nn.Module):
 
     def decode(self, z):
         out = self.decode_fc(z)
-        out = torch.sigmoid(out)
         return out
 
     def forward(self, x):

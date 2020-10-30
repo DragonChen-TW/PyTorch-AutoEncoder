@@ -86,7 +86,7 @@ if __name__ == '__main__':
     for epoch in range(1, max_epoch + 1):
         t = time.time()
         train_loss = train(model, train_data, epoch, criterion, optimizer, device=device)
-        test_loss = test(model, test_data, criterion, device=device)
+        test_loss = test(model, test_data, epoch, criterion, device=device)
 #         scheduler.step()
 
         print('train loss:', train_loss, 'test loss:', test_loss)

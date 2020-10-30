@@ -1,4 +1,4 @@
-import time
+import time, os
 import torch
 from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
@@ -59,17 +59,22 @@ if __name__ == '__main__':
     data_name = 'mnist'
     print('Data using: {}'.format(data_name))
     train_data, test_data = get_dataset(data_name)
+    
+    
+    # make dirs
+    os.makedirs('results', exist_ok=True)
+    os.makedirs('ckpts', exist_ok=True)
 
     # == Model ==
     model = ConvAutoEncoder().to(device)
 
     # == optimizer ==
     criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     # == Main Loop ==
     max_acc = 0
-    max_epoch = 90
+    max_epoch = 50
 #     scheduler = StepLR(optimizer=optimizer, step_size=10)
 
     # first epoch
@@ -103,7 +108,7 @@ if __name__ == '__main__':
                 epoch, data_name))
             
             # sample
-            sample = torch.randn(64, 20).to(device)
-            sample = model.decode(sample).cpu()
+            sample = torch.randn(64, 128).to(device)
+            sample = model.decoder(sample).cpu()
             save_image(sample.view(64, 1, 28, 28),
                        'results/sample_e{:02}.png'.format(epoch))
